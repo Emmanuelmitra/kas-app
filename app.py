@@ -92,10 +92,10 @@ if submit_question_answer:
         elif content_type == 'application/pdf':
             # PDF file, extract text using PyPDF2
             try:
-                pdf_reader = PyPDF2.PdfReader(io.BytesIO(question_paper_content))
+                pdf_reader = PyPDF2.PdfFileReader(io.BytesIO(question_paper_content))
                 question_paper_content = ''
                 for page_num in range(len(pdf_reader.pages)):
-                    question_paper_content += pdf_reader.pages[page_num].extract_text()
+                    question_paper_content += pdf_reader.pages[page_num].extractText()
             except Exception as e:
                 st.error(f"Error extracting text from PDF: {str(e)}")
                 st.stop()
