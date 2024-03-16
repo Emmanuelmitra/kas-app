@@ -113,7 +113,8 @@ if submit_question_answer:
             def download_answers():
                 with io.BytesIO(answer.encode()) as buffer:
                     # Create a download link
-                    st.markdown(get_binary_file_downloader_html(buffer, 'answers.txt', 'Download Answers'), unsafe_allow_html=True)
+                    href = f'data:file/txt;base64,{base64.b64encode(buffer.getvalue()).decode()}'
+                    st.markdown(f'<a href="{href}" download="generated_answers.txt">Download Answers</a>', unsafe_allow_html=True)
 
             # Add a button to trigger downloading
             st.button("Download Answers", on_click=download_answers)
@@ -127,30 +128,8 @@ if submit_prompt1:
     st.subheader("Generated Answers (Custom Prompt 1):")
     st.write(answer)
 
-    # Download button for custom prompt answers
-    if answer is not None:
-        # Define a function to handle downloading
-        def download_custom_prompt1():
-            with io.BytesIO(answer.encode()) as buffer:
-                # Create a download link
-                st.markdown(get_binary_file_downloader_html(buffer, 'custom_prompt1_answers.txt', 'Download Answers'), unsafe_allow_html=True)
-
-        # Add a button to trigger downloading
-        st.button("Download Custom Prompt 1 Answers", on_click=download_custom_prompt1)
-
 if submit_prompt2:
     custom_prompt = "generate question papers of similar"
     answer = get_generative_ai_answer(custom_prompt)
     st.subheader("Generated Answers (Custom Prompt 2):")
-    st.write(answer)
-
-    # Download button for custom prompt answers
-    if answer is not None:
-        # Define a function to handle downloading
-        def download_custom_prompt2():
-            with io.BytesIO(answer.encode()) as buffer:
-                # Create a download link
-                st.markdown(get_binary_file_downloader_html(buffer, 'custom_prompt2_answers.txt', 'Download Answers'), unsafe_allow_html=True)
-
-        # Add a button to trigger downloading
-        st.button("Download Custom Prompt 2 Answers", on_click=download_custom_prompt2)
+    st.write
