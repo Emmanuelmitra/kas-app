@@ -6,3 +6,4 @@ pdf2image
 docx2txt
 langid==1.1.6
 
+
