@@ -66,8 +66,8 @@ st.markdown(
 )
 
 # Streamlit App
-st.title("Question Answering Application")
-st.header("Generative AI-based Question Answering By Emmanuel.D")
+st.title("Question Answering Application By Emmanuel.D")
+st.header("Generative AI-based Question Answering")
 
 # Input field for single question
 single_question = st.text_input("Enter your questions here:")
