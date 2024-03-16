@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 import io
 import google.generativeai as genai
 import langid
-from PyPDF2 import PdfReader
+from PyPDF2 import PdfFileReader
 
 # Load environment variables
 load_dotenv()
@@ -107,10 +107,10 @@ if submit_question_answer:
         elif content_type == 'application/pdf':
             # PDF file, extract text using PyPDF2
             try:
-                pdf_reader = PdfReader(io.BytesIO(question_paper_content))
+                pdf_reader = PdfFileReader(io.BytesIO(question_paper_content))
                 question_paper_content = ''
                 for page_num in range(len(pdf_reader.pages)):
-                    question_paper_content += pdf_reader.pages[page_num].extract_text()
+                    question_paper_content += pdf_reader.pages[page_num].extractText()
             except Exception as e:
                 st.error(f"Error extracting text from PDF: {str(e)}")
                 st.stop()
