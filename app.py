@@ -67,11 +67,11 @@ st.markdown(
 )
 
 # Streamlit App
-st.title("Question Answering Application")
+st.title("Question Answering Application By Emmanuel.D")
 st.header("Generative AI-based Question Answering")
 
 # Input field for single question
-single_question = st.text_input("Enter a single question:")
+single_question = st.text_input("Enter your question here of any topic and subject:")
 
 # Button to generate answer for single question
 submit_single_question = st.button("Generate Answer")
