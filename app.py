@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 import io
 import google.generativeai as genai
 import langid
-import PyPDF2
+from PyPDF2 import PdfFileReader
 
 # Load environment variables
 load_dotenv()
@@ -70,6 +70,21 @@ st.markdown(
 st.title("Question Answering Application")
 st.header("Generative AI-based Question Answering")
 
+# Input field for single question
+single_question = st.text_input("Enter a single question:")
+
+# Button to generate answer for single question
+submit_single_question = st.button("Generate Answer")
+
+# Display generated answer for single question
+if submit_single_question:
+    if single_question:
+        st.subheader("Generated Answer:")
+        single_answer = get_generative_ai_answer(single_question)
+        st.write(single_answer)
+    else:
+        st.warning("Please enter a question.")
+
 # Question paper upload
 uploaded_file = st.file_uploader("Upload Question Paper (Text file or PDF):", type=["txt", "pdf"])
 
@@ -92,10 +107,10 @@ if submit_question_answer:
         elif content_type == 'application/pdf':
             # PDF file, extract text using PyPDF2
             try:
-                pdf_reader = PyPDF2.PdfFileReader(io.BytesIO(question_paper_content))
+                pdf_reader = PdfFileReader(io.BytesIO(question_paper_content))
                 question_paper_content = ''
                 for page_num in range(len(pdf_reader.pages)):
-                    question_paper_content += pdf_reader.pages[page_num].extract_text()
+                    question_paper_content += pdf_reader.pages[page_num].extractText()
             except Exception as e:
                 st.error(f"Error extracting text from PDF: {str(e)}")
                 st.stop()
@@ -132,4 +147,4 @@ if submit_prompt2:
     custom_prompt = "generate question papers of similar"
     answer = get_generative_ai_answer(custom_prompt)
     st.subheader("Generated Answers (Custom Prompt 2):")
-    st.write
+    st.write(answer)
