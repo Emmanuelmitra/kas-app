@@ -70,17 +70,29 @@ st.markdown(
 st.title("Question Answering Application")
 st.header("Generative AI-based Question Answering")
 
+# Single question input
+single_question = st.text_input("Type your single question here")
+
+# Button for generating answer for single question
+submit_single_question = st.button("Get Answer for Single Question")
+
 # Question paper upload
 uploaded_file = st.file_uploader("Upload Question Paper (Text file or PDF):", type=["txt", "pdf"])
 
-# Button for generating answers
+# Button for generating answers for uploaded question paper
 submit_question_answer = st.button("Generate Answers")
 
 # Custom buttons with prompts
 submit_prompt1 = st.button("Custom Prompt 1")
 submit_prompt2 = st.button("Custom Prompt 2")
 
-# Handle button click for question answering
+# Handle button click for single question answering
+if submit_single_question and single_question:
+    st.subheader("Answer for Single Question:")
+    single_answer = get_generative_ai_answer(single_question)
+    st.write(single_answer)
+
+# Handle button click for question answering for uploaded question paper
 if submit_question_answer:
     if uploaded_file is not None:
         content_type = uploaded_file.type
@@ -92,10 +104,10 @@ if submit_question_answer:
         elif content_type == 'application/pdf':
             # PDF file, extract text using PyPDF2
             try:
-                pdf_reader = PyPDF2.PdfFileReader(io.BytesIO(question_paper_content))
+                pdf_reader = PyPDF2.PdfReader(io.BytesIO(question_paper_content))
                 question_paper_content = ''
-                for page_num in range(len(pdf_reader.pages)):
-                    question_paper_content += pdf_reader.pages[page_num].extractText()
+                for page in pdf_reader.pages:
+                    question_paper_content += page.extract_text()
             except Exception as e:
                 st.error(f"Error extracting text from PDF: {str(e)}")
                 st.stop()
@@ -103,7 +115,7 @@ if submit_question_answer:
         # Filter out non-English questions
         english_question_paper_content = filter_english_questions(question_paper_content)
 
-        st.subheader("Generated Answers:")
+        st.subheader("Generated Answers for Uploaded Question Paper:")
         answer = get_generative_ai_answer(english_question_paper_content)
         st.write(answer)
     else:
