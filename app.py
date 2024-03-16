@@ -5,7 +5,9 @@ from dotenv import load_dotenv
 import io
 import google.generativeai as genai
 import langid
-from PyPDF2 import PdfReader
+
+# PyPDF4 instead of PyPDF2
+from PyPDF4 import PdfReader
 
 # Load environment variables
 load_dotenv()
@@ -115,7 +117,7 @@ if submit_question_answer:
             # Text file, decode as UTF-8
             question_paper_content = question_paper_content.decode("utf-8")
         elif content_type == 'application/pdf':
-            # PDF file, extract text using PyPDF2
+            # PDF file, extract text using PyPDF4
             try:
                 pdf_reader = PdfReader(io.BytesIO(question_paper_content))
                 question_paper_content = ''
@@ -160,5 +162,3 @@ if submit_explanation:
     explanation = "The generated answer is based on the input provided and the model's understanding of the context. For detailed insights, consider consulting a subject matter expert."
     st.subheader("Explanation of Generated Answer:")
     st.write(explanation)
-
-
