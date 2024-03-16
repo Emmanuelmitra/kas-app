@@ -1,6 +1,7 @@
 streamlit
 google-generativeai
 python-dotenv
+PyPDF4 
 pdf2image
 docx2txt
 langid==1.1.6
