@@ -6,6 +6,8 @@ import io
 import google.generativeai as genai
 import langid
 from PyPDF2 import PdfFileReader
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 
 # Load environment variables
 load_dotenv()
@@ -34,44 +36,20 @@ def filter_english_questions(question_paper_content):
             filtered_questions.append(line)
     return '\n'.join(filtered_questions)
 
-# Custom color values
-custom_background_color = "#f0f0f0"
-custom_primary_color = "#ff5733"  # Orange
-custom_secondary_color = "#333333"  # Dark Gray
-
-# Apply styling with custom colors
-st.markdown(
-    f"""
-    <style>
-        body {{
-            background-color: {custom_background_color};
-            font-family: 'Arial', sans-serif;
-        }}
-        h1, .stApp {{
-            color: {custom_primary_color};
-            text-align: center;
-        }}
-        h2, h3, .stMarkdown {{
-            color: {custom_secondary_color};
-        }}
-        .stTextInput, .stFileUploader, .stButton, .stTextArea {{
-            border-color: {custom_primary_color};
-        }}
-        .stTextInput, .stFileUploader, .stButton:hover {{
-            background-color: {custom_primary_color};
-            color: white;
-        }}
-    </style>
-    """
-    , unsafe_allow_html=True
-)
+# Function to save answer as PDF
+def save_as_pdf(answer_text):
+    pdf_filename = "generated_answer.pdf"
+    c = canvas.Canvas(pdf_filename, pagesize=letter)
+    c.drawString(100, 750, answer_text)
+    c.save()
+    return pdf_filename
 
 # Streamlit App
-st.title("Question Answering Application By Emmanuel.D")
+st.title("Question Answering Application")
 st.header("Generative AI-based Question Answering")
 
 # Input field for single question
-single_question = st.text_input("Enter your question here of any topic and subject:")
+single_question = st.text_input("Enter a single question:")
 
 # Button to generate answer for single question
 submit_single_question = st.button("Generate Answer")
@@ -82,6 +60,12 @@ if submit_single_question:
         st.subheader("Generated Answer:")
         single_answer = get_generative_ai_answer(single_question)
         st.write(single_answer)
+        
+        # Save answer as PDF and provide download link
+        if single_answer:
+            pdf_filename = save_as_pdf(single_answer)
+            with open(pdf_filename, "rb") as f:
+                st.download_button("Download Answer as PDF", f.read(), file_name="generated_answer.pdf", mime="application/pdf")
     else:
         st.warning("Please enter a question.")
 
@@ -121,18 +105,12 @@ if submit_question_answer:
         st.subheader("Generated Answers:")
         answer = get_generative_ai_answer(english_question_paper_content)
         st.write(answer)
-
-        # Download button for answers
-        if answer is not None:
-            # Define a function to handle downloading
-            def download_answers():
-                with io.BytesIO(answer.encode()) as buffer:
-                    # Create a download link
-                    href = f'data:file/txt;base64,{base64.b64encode(buffer.getvalue()).decode()}'
-                    st.markdown(f'<a href="{href}" download="generated_answers.txt">Download Answers</a>', unsafe_allow_html=True)
-
-            # Add a button to trigger downloading
-            st.button("Download Answers", on_click=download_answers)
+        
+        # Save answer as PDF and provide download link
+        if answer:
+            pdf_filename = save_as_pdf(answer)
+            with open(pdf_filename, "rb") as f:
+                st.download_button("Download Answer as PDF", f.read(), file_name="generated_answer.pdf", mime="application/pdf")
     else:
         st.warning("Please upload a question paper.")
 
@@ -142,9 +120,21 @@ if submit_prompt1:
     answer = get_generative_ai_answer(custom_prompt)
     st.subheader("Generated Answers (Custom Prompt 1):")
     st.write(answer)
+    
+    # Save answer as PDF and provide download link
+    if answer:
+        pdf_filename = save_as_pdf(answer)
+        with open(pdf_filename, "rb") as f:
+            st.download_button("Download Answer as PDF", f.read(), file_name="generated_answer.pdf", mime="application/pdf")
 
 if submit_prompt2:
     custom_prompt = "generate question papers of similar"
     answer = get_generative_ai_answer(custom_prompt)
     st.subheader("Generated Answers (Custom Prompt 2):")
     st.write(answer)
+    
+    # Save answer as PDF and provide download link
+    if answer:
+        pdf_filename = save_as_pdf(answer)
+        with open(pdf_filename, "rb") as f:
+            st.download_button("Download Answer as PDF", f.read(), file_name="generated_answer.pdf", mime="application/pdf")
