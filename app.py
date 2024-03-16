@@ -1,50 +1,25 @@
-import base64
 import streamlit as st
-import os
-from dotenv import load_dotenv
-import io
-import google.generativeai as genai
-import langid
-from PyPDF2 import PdfFileReader
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
+import os
 
-# Load environment variables
-load_dotenv()
+# Function to generate PDF
+def generate_pdf(content):
+    # Set up the PDF canvas
+    pdf_path = "output.pdf"
+    c = canvas.Canvas(pdf_path, pagesize=letter)
+    y = 750
 
-# Configure Generative AI
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+    # Write content to PDF
+    for line in content.split("\n"):
+        c.drawString(100, y, line)
+        y -= 12
 
-@st.cache_data(show_spinner=True)
-@st.cache_resource()
-def get_generative_ai_answer(input_text):
-    try:
-        model = genai.GenerativeModel('gemini-pro')  # Use the appropriate model for your task
-        response = model.generate_content([input_text])
-        text_content = response.parts[0].text if response.parts else "No text found in the response"
-        return text_content
-    except Exception as e:
-        st.error(f"Error in generating response: {str(e)}")
-        return None
-
-# Function to filter out non-English questions
-def filter_english_questions(question_paper_content):
-    filtered_questions = []
-    for line in question_paper_content.split('\n'):
-        lang, _ = langid.classify(line)
-        if lang == 'en':
-            filtered_questions.append(line)
-    return '\n'.join(filtered_questions)
-
-# Function to save answer as PDF
-def save_as_pdf(answer_text):
-    pdf_filename = "generated_answer.pdf"
-    c = canvas.Canvas(pdf_filename, pagesize=letter)
-    c.drawString(100, 750, answer_text)
+    # Save the PDF
     c.save()
-    return pdf_filename
+    return pdf_path
 
-# Streamlit App
+# Configure Streamlit app
 st.title("Question Answering Application")
 st.header("Generative AI-based Question Answering")
 
@@ -60,12 +35,6 @@ if submit_single_question:
         st.subheader("Generated Answer:")
         single_answer = get_generative_ai_answer(single_question)
         st.write(single_answer)
-        
-        # Save answer as PDF and provide download link
-        if single_answer:
-            pdf_filename = save_as_pdf(single_answer)
-            with open(pdf_filename, "rb") as f:
-                st.download_button("Download Answer as PDF", f.read(), file_name="generated_answer.pdf", mime="application/pdf")
     else:
         st.warning("Please enter a question.")
 
@@ -105,12 +74,16 @@ if submit_question_answer:
         st.subheader("Generated Answers:")
         answer = get_generative_ai_answer(english_question_paper_content)
         st.write(answer)
-        
-        # Save answer as PDF and provide download link
-        if answer:
-            pdf_filename = save_as_pdf(answer)
-            with open(pdf_filename, "rb") as f:
-                st.download_button("Download Answer as PDF", f.read(), file_name="generated_answer.pdf", mime="application/pdf")
+
+        # Generate and download PDF
+        pdf_path = generate_pdf(answer)
+        with open(pdf_path, "rb") as f:
+            st.download_button(label="Download PDF", data=f, file_name="output.pdf", mime="application/pdf")
+
+        # Delete the PDF file after download
+        if os.path.exists("output.pdf"):
+            os.remove("output.pdf")
+
     else:
         st.warning("Please upload a question paper.")
 
@@ -120,21 +93,9 @@ if submit_prompt1:
     answer = get_generative_ai_answer(custom_prompt)
     st.subheader("Generated Answers (Custom Prompt 1):")
     st.write(answer)
-    
-    # Save answer as PDF and provide download link
-    if answer:
-        pdf_filename = save_as_pdf(answer)
-        with open(pdf_filename, "rb") as f:
-            st.download_button("Download Answer as PDF", f.read(), file_name="generated_answer.pdf", mime="application/pdf")
 
 if submit_prompt2:
     custom_prompt = "generate question papers of similar"
     answer = get_generative_ai_answer(custom_prompt)
     st.subheader("Generated Answers (Custom Prompt 2):")
     st.write(answer)
-    
-    # Save answer as PDF and provide download link
-    if answer:
-        pdf_filename = save_as_pdf(answer)
-        with open(pdf_filename, "rb") as f:
-            st.download_button("Download Answer as PDF", f.read(), file_name="generated_answer.pdf", mime="application/pdf")
