@@ -1,25 +1,71 @@
+import base64
 import streamlit as st
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
 import os
+import io
+import google.generativeai as genai
+import langid
+from PyPDF2 import PdfFileReader
 
-# Function to generate PDF
-def generate_pdf(content):
-    # Set up the PDF canvas
-    pdf_path = "output.pdf"
-    c = canvas.Canvas(pdf_path, pagesize=letter)
-    y = 750
+# Load environment variables
+# load_dotenv()  # Uncomment this if you are using .env file for configuration
 
-    # Write content to PDF
-    for line in content.split("\n"):
-        c.drawString(100, y, line)
-        y -= 12
+# Configure Generative AI
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
-    # Save the PDF
-    c.save()
-    return pdf_path
+@st.cache_data(show_spinner=True)
+@st.cache_resource()
+def get_generative_ai_answer(input_text):
+    try:
+        model = genai.GenerativeModel('gemini-pro')  # Use the appropriate model for your task
+        response = model.generate_content([input_text])
+        text_content = response.parts[0].text if response.parts else "No text found in the response"
+        return text_content
+    except Exception as e:
+        st.error(f"Error in generating response: {str(e)}")
+        return None
 
-# Configure Streamlit app
+# Function to filter out non-English questions
+def filter_english_questions(question_paper_content):
+    filtered_questions = []
+    for line in question_paper_content.split('\n'):
+        lang, _ = langid.classify(line)
+        if lang == 'en':
+            filtered_questions.append(line)
+    return '\n'.join(filtered_questions)
+
+# Custom color values
+custom_background_color = "#f0f0f0"
+custom_primary_color = "#ff5733"  # Orange
+custom_secondary_color = "#333333"  # Dark Gray
+
+# Apply styling with custom colors
+st.markdown(
+    f"""
+    <style>
+        body {{
+            background-color: {custom_background_color};
+            font-family: 'Arial', sans-serif;
+        }}
+        h1, .stApp {{
+            color: {custom_primary_color};
+            text-align: center;
+        }}
+        h2, h3, .stMarkdown {{
+            color: {custom_secondary_color};
+        }}
+        .stTextInput, .stFileUploader, .stButton, .stTextArea {{
+            border-color: {custom_primary_color};
+        }}
+        .stTextInput, .stFileUploader, .stButton:hover {{
+            background-color: {custom_primary_color};
+            color: white;
+        }}
+    </style>
+    """
+    , unsafe_allow_html=True
+)
+
+# Streamlit App
 st.title("Question Answering Application")
 st.header("Generative AI-based Question Answering")
 
@@ -75,15 +121,17 @@ if submit_question_answer:
         answer = get_generative_ai_answer(english_question_paper_content)
         st.write(answer)
 
-        # Generate and download PDF
-        pdf_path = generate_pdf(answer)
-        with open(pdf_path, "rb") as f:
-            st.download_button(label="Download PDF", data=f, file_name="output.pdf", mime="application/pdf")
+        # Download button for answers
+        if answer is not None:
+            # Define a function to handle downloading
+            def download_answers():
+                with io.BytesIO(answer.encode()) as buffer:
+                    # Create a download link
+                    href = f'data:file/txt;base64,{base64.b64encode(buffer.getvalue()).decode()}'
+                    st.markdown(f'<a href="{href}" download="generated_answers.txt">Download Answers</a>', unsafe_allow_html=True)
 
-        # Delete the PDF file after download
-        if os.path.exists("output.pdf"):
-            os.remove("output.pdf")
-
+            # Add a button to trigger downloading
+            st.button("Download Answers", on_click=download_answers)
     else:
         st.warning("Please upload a question paper.")
 
