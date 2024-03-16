@@ -1,8 +1,8 @@
 streamlit
 google-generativeai
 python-dotenv
-PyPDF4 
+PyPDF4
 pdf2image
 docx2txt
 langid==1.1.6
-PyPDF2==1.26.0  # or specify a different version if needed
+
